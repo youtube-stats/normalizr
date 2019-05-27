@@ -13,15 +13,6 @@ class Metrics:
     def all(self):
         return [self.time, self.idx, self.subs, self.views, self.videos]
 
-    def subs(self):
-        return [self.time, self.idx, self.subs]
-
-    def views(self):
-        return [self.time, self.idx, self.views]
-
-    def videos(self):
-        return [self.time, self.idx, self.videos]
-
 
 def connect():
     return psycopg2.connect(user='admin', password='', host='localhost', port='5432', database='youtube')
@@ -33,10 +24,10 @@ conn = connect()
 def insert_subs(obj: Metrics):
     print('Inserting subs:', obj.time, obj.idx, obj.subs)
 
-    sql: str = 'INSERT INTO youtube.stats.metric_subs (time, channel_id, subs) VALUES (%s, %s, %s);'
+    sql: str = f"INSERT INTO youtube.stats.metric_subs (time, channel_id, subs) VALUES ('{obj.time}', {obj.idx}, {obj.subs});"
     cursor = conn.cursor()
 
-    cursor.execute(sql, obj.subs())
+    cursor.execute(sql)
     conn.commit()
     cursor.close()
 
@@ -55,7 +46,7 @@ def check_subs(channel_id, subs) -> bool:
         print('Checking subs - no results')
         return True
     else:
-        pred: bool = subs == record[0]
+        pred: bool = subs != record[0]
         print('Checking subs - inserting?', pred)
 
         return pred
@@ -64,10 +55,10 @@ def check_subs(channel_id, subs) -> bool:
 def insert_views(obj: Metrics):
     print('Inserting views:', obj.time, obj.idx, obj.views)
 
-    sql: str = 'INSERT INTO youtube.stats.metric_views (time, channel_id, views) VALUES (%s, %s, %s);'
+    sql: str = f"INSERT INTO youtube.stats.metric_views (time, channel_id, views) VALUES ('{obj.time}', {obj.idx}, {obj.views});"
     cursor = conn.cursor()
 
-    cursor.execute(sql, obj.views())
+    cursor.execute(sql)
     conn.commit()
     cursor.close()
 
@@ -86,7 +77,7 @@ def check_views(channel_id, views) -> bool:
         print('Checking views - no results')
         return True
     else:
-        pred: bool = views == record[0]
+        pred: bool = views != record[0]
         print('Checking views - inserting?', pred)
 
         return pred
@@ -95,10 +86,10 @@ def check_views(channel_id, views) -> bool:
 def insert_videos(obj: Metrics):
     print('Inserting videos:', obj.time, obj.idx, obj.videos)
 
-    sql: str = 'INSERT INTO youtube.stats.metric_videos (time, channel_id, videos) VALUES (%s, %s, %s);'
+    sql: str = f"INSERT INTO youtube.stats.metric_videos (time, channel_id, videos) VALUES ('{obj.time}', {obj.idx}, {obj.videos});"
     cursor = conn.cursor()
 
-    cursor.execute(sql, obj.videos())
+    cursor.execute(sql)
     conn.commit()
     cursor.close()
 
@@ -117,7 +108,7 @@ def check_videos(channel_id, videos) -> bool:
         print('Checking videos - no results')
         return True
     else:
-        pred: bool = videos == record[0]
+        pred: bool = videos != record[0]
         print('Checking videos - inserting?', pred)
 
         return pred
@@ -139,7 +130,7 @@ def get_row() -> Optional[Metrics]:
 
 def delete_row(row: Metrics):
     print('Erasing', row.time, row.idx, row.subs, row.views, row.videos)
-    delete: str = 'DELETE FROM youtube.stats.metrics WHERE time = %s AND channel_id = %s AND subs = %s AND views = %s AND videos = %s'
+    delete: str = f"DELETE FROM youtube.stats.metrics WHERE time = '{row.time}' AND channel_id = {row.idx} AND subs = {row.subs} AND videos = {row.videos}"
 
     cursor = conn.cursor()
     cursor.execute(delete)
